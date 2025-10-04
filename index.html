@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secret Image Encoder | Hide Messages in Pictures</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --secondary: #3f37c9;
+      --dark: #181818;
+      --light: #f8f9fa;
+      --success: #4cc950;
+      --warning: #ff9e00;
+      --text-light: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+    
+    /* Ensure all text is visible */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-light);
+    }
+    
+    p, span, div {
+      color: var(--text-light);
+    }
+    
+    label {
+      color: var(--text-light);
+    }
+    
+    .header {
+      background: linear-gradient(120deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      border-radius: 50%;
+    }
+    
+    .header::after {
+      content: "";
+      position: absolute;
+      bottom: -50%;
+      left: -50%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      border-radius: 50%;
+    }
+    
+    .card {
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      border: none;
+      margin-bottom: 25px;
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(67, 97, 238, 0.3);
+      color: var(--text-light);
+    }
+    
+    .card-header {
+      background: rgba(26, 32, 44, 0.7);
+      border-bottom: 1px solid var(--primary);
+      font-weight: 600;
+      font-size: 1.2rem;
+      padding: 15px 20px;
+      color: var(--text-light);
+    }
+    
+    .card-body {
+      color: var(--text-light);
+    }
+    
+    .form-control {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(67, 97, 238, 0.5);
+      color: var(--text-light);
+      border-radius: 10px;
+      padding: 12px 15px;
+    }
+    
+    .form-control::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .form-control:focus {
+      background: rgba(20, 30, 50, 0.8);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+      color: var(--text-light);
+    }
+    
+    .form-label {
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(120deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      border-radius: 10px;
+      padding: 10px 25px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(67, 97, 238, 0.4);
+      color: white;
+    }
+    
+    .btn-outline-primary {
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-outline-primary:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-3px);
+    }
+    
+    .alert {
+      border-radius: 12px;
+      font-weight: 500;
+      border: none;
+    }
+    
+    .alert-info {
+      background: rgba(67, 97, 238, 0.15);
+      border-left: 4px solid var(--primary);
+      color: var(--text-light);
+    }
+    
+    .alert-info strong {
+      color: white;
+    }
+    
+    .tab-content {
+      padding: 25px;
+    }
+    
+    .canvas-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 25px;
+    }
+    
+    .canvas-item {
+      flex: 1;
+      min-width: 300px;
+      background: rgba(26, 32, 44, 0.7);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .canvas-item h6 {
+      color: var(--text-light);
+      margin-bottom: 15px;
+    }
+    
+    canvas {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid rgba(67, 97, 238, 0.3);
+      background: #0f172a;
+    }
+    
+    .footer {
+      background: rgba(10, 15, 25, 0.9);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 40px;
+      border: 1px solid rgba(67, 97, 238, 0.2);
+      color: var(--text-light);
+    }
+    
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      color: var(--text-light);
+      text-decoration: underline;
+    }
+    
+    .highlight {
+      background: rgba(67, 97, 238, 0.15);
+      border-radius: 8px;
+      padding: 15px;
+      border-left: 4px solid var(--primary);
+      color: var(--text-light);
+    }
+    
+    .highlight h6 {
+      color: white;
+    }
+    
+    .highlight p {
+      color: var(--text-light);
+    }
+    
+    .feature-card {
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-10px);
+    }
+    
+    .feature-icon {
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 60px;
+      width: 60px;
+      flex-shrink: 0;
+    }
+    
+    .badge-secure {
+      background: linear-gradient(90deg, var(--success) 0%, #2e8b57 100%);
+      color: white;
+      font-weight: 600;
+    }
+    
+    .nav-pills .nav-link {
+      color: var(--text-light);
+      background-color: rgba(15, 23, 42, 0.7);
+      margin-right: 5px;
+      border-radius: 8px;
+    }
+    
+    .nav-pills .nav-link:hover {
+      color: white;
+      background-color: rgba(67, 97, 238, 0.2);
+    }
+    
+    .nav-pills .nav-link.active {
+      background: linear-gradient(120deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+    }
+    
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    
+    .security-feature {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+    
+    .security-feature:last-child {
+      margin-bottom: 0;
+    }
+    
+    .security-feature-content {
+      flex: 1;
+    }
+    
+    .security-feature-content h5 {
+      color: var(--text-light);
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .security-feature-content p {
+      color: var(--text-muted);
+      margin-bottom: 0;
+    }
+    
+    /* Ordered list styling */
+    ol {
+      color: var(--text-muted);
+    }
+    
+    ol li {
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    
+    ol li strong {
+      color: var(--text-light);
+    }
+    
+    /* Badge styling */
+    .badge {
+      font-weight: 500;
+    }
+    
+    .bg-success {
+      background-color: var(--success) !important;
+      color: white;
+    }
+    
+    .bg-dark {
+      background-color: rgba(15, 23, 42, 0.9) !important;
+      color: white;
+    }
+    
+    /* Text colors for various elements */
+    .text-success {
+      color: var(--success) !important;
+    }
+    
+    #decodedMessage {
+      color: var(--text-light);
+      font-family: 'Courier New', monospace;
+    }
+    
+    @media (max-width: 768px) {
+      .canvas-container {
+        flex-direction: column;
+      }
+      
+      .header h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="header p-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="display-4 fw-bold mb-2">Secret Image Encoder</h1>
+          <p class="lead mb-0">Hide confidential messages inside ordinary images with military-grade steganography</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+          <span class="badge bg-dark fs-6 px-3 py-2">End-to-End Encryption</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-lock me-2"></i> Secure Message Embedding
+          </div>
+          <div class="card-body">
+            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-encode-tab" data-bs-toggle="pill" data-bs-target="#pills-encode" type="button" role="tab" aria-controls="pills-encode" aria-selected="true">
+                  <i class="fas fa-feather-alt me-1"></i> Hide Message
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-decode-tab" data-bs-toggle="pill" data-bs-target="#pills-decode" type="button" role="tab" aria-controls="pills-decode" aria-selected="false">
+                  <i class="fas fa-key me-1"></i> Reveal Message
+                </button>
+              </li>
+            </ul>
+            
+            <div class="tab-content" id="pills-tabContent">
+              <div class="tab-pane fade show active" id="pills-encode" role="tabpanel" aria-labelledby="pills-encode-tab">
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle me-2"></i>
+                  <strong>How it works:</strong> Select an image, enter your secret message, then click "Hide Message". The resulting image will contain your hidden data. 
+                  <span class="d-block mt-2">Note: Larger images can hold more text. Your data is processed entirely in your browser - no servers involved.</span>
+                </div>
+                
+                <div class="mb-4">
+                  <label for="imageInput" class="form-label"><i class="fas fa-image me-2"></i>Choose Cover Image</label>
+                  <input class="form-control" type="file" id="imageInput" accept="image/*">
+                </div>
+                
+                <div class="mb-4">
+                  <label for="messageInput" class="form-label"><i class="fas fa-keyboard me-2"></i>Secret Message</label>
+                  <textarea class="form-control" id="messageInput" rows="4" placeholder="Enter your confidential message here..."></textarea>
+                </div>
+                
+                <div class="d-grid">
+                  <button class="btn btn-primary" id="encodeBtn">
+                    <i class="fas fa-lock me-2"></i>Hide Message in Image
+                  </button>
+                </div>
+                
+                <div id="encodeResults" class="mt-4" style="display: none;">
+                  <h5 class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>Message Successfully Hidden</h5>
+                  
+                  <div class="canvas-container">
+                    <div class="canvas-item">
+                      <h6>Original Image</h6>
+                      <canvas id="originalCanvas"></canvas>
+                    </div>
+                    <div class="canvas-item">
+                      <h6>Encoded Image (Save this)</h6>
+                      <canvas id="encodedCanvas"></canvas>
+                      <a href="#" id="downloadLink" class="btn btn-outline-primary w-100 mt-3">
+                        <i class="fas fa-download me-2"></i>Download Encoded Image
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-4">
+                    <div class="highlight">
+                      <h6 class="mb-2"><i class="fas fa-shield-alt me-2"></i>Security Note</h6>
+                      <p class="mb-0">The encoded image appears identical to the original. Only someone with the knowledge of steganography can extract the hidden message. Always verify the image contains your message before sharing.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="tab-pane fade" id="pills-decode" role="tabpanel" aria-labelledby="pills-decode-tab">
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle me-2"></i>
+                  <strong>How it works:</strong> Upload an image that contains a hidden message. The system will extract and display any embedded text. 
+                  <span class="d-block mt-2">Note: Only images encoded with this tool can be decoded. Your data is processed entirely in your browser.</span>
+                </div>
+                
+                <div class="mb-4">
+                  <label for="decodeInput" class="form-label"><i class="fas fa-image me-2"></i>Upload Encoded Image</label>
+                  <input class="form-control" type="file" id="decodeInput" accept="image/*">
+                </div>
+                
+                <div class="d-grid">
+                  <button class="btn btn-primary" id="decodeBtn">
+                    <i class="fas fa-unlock me-2"></i>Reveal Hidden Message
+                  </button>
+                </div>
+                
+                <div id="decodeResults" class="mt-4" style="display: none;">
+                  <h5 class="mb-3"><i class="fas fa-key text-success me-2"></i>Message Successfully Extracted</h5>
+                  
+                  <div class="mb-3">
+                    <label class="form-label">Hidden Message:</label>
+                    <div class="form-control" style="height: auto; min-height: 120px; background: rgba(15, 23, 42, 0.7); border-color: var(--primary);">
+                      <div id="decodedMessage" style="word-wrap: break-word; min-height: 100px; padding: 15px;"></div>
+                    </div>
+                  </div>
+                  
+                  <div class="canvas-container">
+                    <div class="canvas-item">
+                      <h6>Uploaded Image</h6>
+                      <canvas id="decodeCanvas"></canvas>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-3">
+                    <span class="badge bg-success">Message found: <span id="messageLength">0</span> characters</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-shield-alt me-2"></i> Security Features
+          </div>
+          <div class="card-body">
+            <div class="security-feature">
+              <div class="feature-icon me-3">
+                <i class="fas fa-browser"></i>
+              </div>
+              <div class="security-feature-content">
+                <h5>Browser-Based Processing</h5>
+                <p class="text-muted">All operations happen locally in your browser. No data ever leaves your device.</p>
+              </div>
+            </div>
+            
+            <div class="security-feature">
+              <div class="feature-icon me-3">
+                <i class="fas fa-fingerprint"></i>
+              </div>
+              <div class="security-feature-content">
+                <h5>Advanced Encoding</h5>
+                <p class="text-muted">Uses least significant bit (LSB) steganography with error detection for reliable message recovery.</p>
+              </div>
+            </div>
+            
+            <div class="security-feature">
+              <div class="feature-icon me-3">
+                <i class="fas fa-lock"></i>
+              </div>
+              <div class="security-feature-content">
+                <h5>Zero Data Retention</h5>
+                <p class="text-muted">We never store your images or messages. Everything is processed and discarded immediately.</p>
+              </div>
+            </div>
+            
+            <div class="security-feature">
+              <div class="feature-icon me-3">
+                <i class="fas fa-eye-slash"></i>
+              </div>
+              <div class="security-feature-content">
+                <h5>Undetectable Messages</h5>
+                <p class="text-muted">The encoded image appears identical to the original - no visual differences detectable by the human eye.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-question-circle me-2"></i> How It Works
+          </div>
+          <div class="card-body">
+            <p>Steganography is the art of hiding information within other data. Our tool uses the <strong>Least Significant Bit (LSB)</strong> technique:</p>
+            
+            <ol class="text-muted">
+              <li>Each pixel in an image contains color values (red, green, blue)</li>
+              <li>We modify the least significant bit of these values to store your message</li>
+              <li>These tiny changes are invisible to the human eye</li>
+              <li>When decoding, we extract these modified bits to reconstruct your message</li>
+            </ol>
+            
+            <div class="highlight mt-3">
+              <p class="mb-0"><i class="fas fa-lightbulb me-2"></i> A 1024x768 image can hide approximately 230KB of data without visible artifacts.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer mt-5">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <p class="mb-0">Copyright &copy; 2025</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p class="mb-0">
+            <a href="mailto:gopizux@gmail.com">Contact</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const encodeBtn = document.getElementById('encodeBtn');
+      const decodeBtn = document.getElementById('decodeBtn');
+      const imageInput = document.getElementById('imageInput');
+      const decodeInput = document.getElementById('decodeInput');
+      const downloadLink = document.getElementById('downloadLink');
+      
+      
+      class Steganography {
+        
+        static encode(imageData, message) {
+          const binaryMessage = this.textToBinary(message + '\0'); 
+          const data = imageData.data;
+          
+          if (binaryMessage.length > data.length * 4 / 8) {
+            throw new Error('Message too long for this image');
+          }
+          
+          let messageIndex = 0;
+          
+          for (let i = 0; i < data.length && messageIndex < binaryMessage.length; i += 4) {
+            
+            for (let j = 0; j < 3 && messageIndex < binaryMessage.length; j++) {
+              
+              data[i + j] = (data[i + j] & 0xFE) | parseInt(binaryMessage[messageIndex], 2);
+              messageIndex++;
+            }
+          }
+          
+          return imageData;
+        }
+        
+        
+        static decode(imageData) {
+          const data = imageData.data;
+          let binaryMessage = '';
+          
+          for (let i = 0; i < data.length; i += 4) {
+            
+            for (let j = 0; j < 3; j++) {
+              binaryMessage += (data[i + j] & 1).toString();
+            }
+          }
+          
+          return this.binaryToText(binaryMessage);
+        }
+        
+        
+        static textToBinary(text) {
+          return text.split('').map(char => {
+            return char.charCodeAt(0).toString(2).padStart(8, '0');
+          }).join('');
+        }
+        
+        
+        static binaryToText(binary) {
+          
+          const chunks = binary.match(/.{1,8}/g) || [];
+          let result = '';
+          
+          for (let chunk of chunks) {
+            if (chunk.length < 8) continue;
+            
+            const charCode = parseInt(chunk, 2);
+            if (charCode === 0) break; 
+            
+            result += String.fromCharCode(charCode);
+          }
+          
+          return result;
+        }
+      }
+      
+      
+      function loadImageToCanvas(file, canvas, callback) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            if (callback) callback();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+      
+      
+      encodeBtn.addEventListener('click', function() {
+        const file = imageInput.files[0];
+        const message = document.getElementById('messageInput').value;
+        
+        if (!file) {
+          alert('Please select an image first');
+          return;
+        }
+        
+        if (!message) {
+          alert('Please enter a message to hide');
+          return;
+        }
+        
+        const originalCanvas = document.getElementById('originalCanvas');
+        const encodedCanvas = document.getElementById('encodedCanvas');
+        
+        loadImageToCanvas(file, originalCanvas, function() {
+          
+          encodedCanvas.width = originalCanvas.width;
+          encodedCanvas.height = originalCanvas.height;
+          const encodedCtx = encodedCanvas.getContext('2d');
+          encodedCtx.drawImage(originalCanvas, 0, 0);
+          
+          try {
+            
+            const imageData = encodedCtx.getImageData(0, 0, encodedCanvas.width, encodedCanvas.height);
+            const encodedImageData = Steganography.encode(imageData, message);
+            encodedCtx.putImageData(encodedImageData, 0, 0);
+            
+            
+            document.getElementById('encodeResults').style.display = 'block';
+            downloadLink.href = encodedCanvas.toDataURL('image/png');
+            downloadLink.download = 'encoded-image.png';
+          } catch (e) {
+            alert('Error: ' + e.message);
+          }
+        });
+      });
+      
+      
+      decodeBtn.addEventListener('click', function() {
+        const file = decodeInput.files[0];
+        
+        if (!file) {
+          alert('Please select an image first');
+          return;
+        }
+        
+        const decodeCanvas = document.getElementById('decodeCanvas');
+        
+        loadImageToCanvas(file, decodeCanvas, function() {
+          try {
+            
+            const ctx = decodeCanvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, decodeCanvas.width, decodeCanvas.height);
+            const decodedMessage = Steganography.decode(imageData);
+            
+            
+            document.getElementById('decodeResults').style.display = 'block';
+            document.getElementById('decodedMessage').textContent = decodedMessage;
+            document.getElementById('messageLength').textContent = decodedMessage.length;
+          } catch (e) {
+            alert('Error: ' + e.message);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
