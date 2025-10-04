@@ -59,10 +59,10 @@ Simply open the HTML file in any modern web browser. No installation or server s
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/secret-image-encoder.git
+git clone https://github.com/gopizux/imagencoder.git
 
 # Navigate to the project directory
-cd secret-image-encoder
+cd imagencoder
 
 # Open in browser
 open index.html
@@ -129,17 +129,17 @@ The application can be hosted on any static web server or platform:
 ### Core Algorithm Structure
 
 ```javascript
-// Message to Binary Conversion
+
 textToBinary(text) {
     return text.split('').map(char => 
         char.charCodeAt(0).toString(2).padStart(8, '0')
     ).join('');
 }
 
-// LSB Embedding
+
 encode(imageData, message) {
     const binaryMessage = textToBinary(message + '\0');
-    // Modify LSBs of RGB channels
+   
     for each pixel:
         for each color channel (R, G, B):
             channel_value = (channel_value & 0xFE) | message_bit
@@ -166,9 +166,9 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 ### Development Setup
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/YourFeature`)
-3. Commit your changes (`git commit -m 'Add YourFeature'`)
-4. Push to the branch (`git push origin feature/YourFeature`)
+2. Create a feature branch (`git checkout -b feature/`)
+3. Commit your changes (`git commit -m`)
+4. Push to the branch (`git push origin feature`)
 5. Open a Pull Request
 
 ## License
